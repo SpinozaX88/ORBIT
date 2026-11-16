@@ -1,3 +1,4 @@
+
 import 'dart:async';
 import 'dart:io';
 
@@ -22,9 +23,11 @@ class LocalSpeechService {
 
     final support = await getApplicationSupportDirectory();
     final modelsDir = Directory('${support.path}/models');
+
     if (!await modelsDir.exists()) {
       await modelsDir.create(recursive: true);
     }
+
     final model = File('${modelsDir.path}/$modelFile');
 
     if (!await model.exists() || await model.length() < 1000000) {
@@ -46,6 +49,7 @@ class LocalSpeechService {
       model.path,
       config: const WhisperConfig(backend: WhisperBackend.cpu),
     );
+
     onProgress?.call(1);
   }
 
@@ -54,14 +58,18 @@ class LocalSpeechService {
     required void Function(Object error) onError,
   }) async {
     final engine = _engine;
+
     if (engine == null) {
       throw StateError('Le moteur vocal n’est pas chargé.');
     }
+
     await stop();
+
     _task = await engine.transcribeMicrophone(
       options: const TranscribeOptions(language: 'auto')
           .withPerformanceMode(WhisperPerformanceMode.efficient),
     );
+
     _updates = _task!.updates.listen(
       (update) => onText(update.text),
       onError: onError,
@@ -71,16 +79,21 @@ class LocalSpeechService {
   Future<String> stop() async {
     await _updates?.cancel();
     _updates = null;
+
     final task = _task;
     _task = null;
+
     if (task == null) return '';
+
     final result = await task.stop();
     return result.confirmedText;
   }
 
   Future<void> dispose() async {
     await stop();
-    await _engine?.dispose();
+
+    // dispose() returns void: do not use await here.
+    _engine?.dispose();
     _engine = null;
   }
 }
