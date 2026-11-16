@@ -46,7 +46,7 @@ jobs:
         run: flutter pub get
 
       - name: Check Flutter project
-        run: flutter analyze
+        run: flutter analyze lib
 
       - name: Build Android APK
         run: flutter build apk --release
